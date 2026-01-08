@@ -42,7 +42,7 @@ public class ChartGenerator {
 
         // Создаем диаграмму
         JFreeChart barChart = ChartFactory.createBarChart(
-                "GDP per Capita by Country (Top 10)", // Название диаграммы
+                "Средний GDP per Capita по регионам", // Название диаграммы
                 "Country", // Название оси X
                 "GDP per Capita", // Название оси Y
                 dataset,

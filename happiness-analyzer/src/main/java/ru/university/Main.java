@@ -59,22 +59,23 @@ public class Main {
 
         // Шаг 4: Выполнение SQL-запросов и вывод результатов
 
-        // Запрос 1: Топ-10 стран по показателю экономики (GDP per Capita)
+        // Запрос 1
         System.out.println("\n===== ЗАПРОС 1: ТОП-10 СТРАН ПО ПОКАЗАТЕЛЮ ЭКОНОМИКИ =====");
-        String query1 = "SELECT name, economy FROM countries ORDER BY economy DESC LIMIT 10";
+        String query1 = "SELECT r.name AS region_name, AVG(c.economy) as avg_economy " +
+                "FROM countries c " +
+                "JOIN regions r ON c.region_id = r.id " +
+                "GROUP BY r.name " +
+                "ORDER BY avg_economy DESC";
         Map<String, Double> economyData = new LinkedHashMap<>();
-        List<String> topEconomyCountries = new ArrayList<>();
-
         executeAndPrintQuery(dbManager, query1, rs -> {
             try {
-                System.out.printf("%-30s | %s%n", "Страна", "GDP per Capita");
-                System.out.println("-".repeat(50));
+                System.out.printf("%-35s | %s%n", "Регион", "Средний GDP per Capita");
+                System.out.println("-".repeat(55));
                 while (rs.next()) {
-                    String countryName = rs.getString("name");
-                    double economyValue = rs.getDouble("economy");
-                    System.out.printf("%-30s | %s%n", countryName, DECIMAL_FORMAT.format(economyValue));
-                    economyData.put(countryName, economyValue);
-                    topEconomyCountries.add(countryName);
+                    String regionName = rs.getString("region_name");
+                    double avgEconomy = rs.getDouble("avg_economy");
+                    System.out.printf("%-35s | %s%n", regionName, DECIMAL_FORMAT.format(avgEconomy));
+                    economyData.put(regionName, avgEconomy);
                 }
             } catch (SQLException e) {
                 e.printStackTrace();
@@ -84,42 +85,17 @@ public class Main {
         // Создание диаграммы для первого запроса
         ChartGenerator.createEconomyChart(economyData, "economy_chart.png");
 
-        // Запрос 2: Страна из топ-3 по экономике в регионах 'Latin America and Caribbean' и 'Eastern Asia'
-        System.out.println("\n===== ЗАПРОС 2: СТРАНА ИЗ ТОП-3 ПО ЭКОНОМИКЕ В УКАЗАННЫХ РЕГИОНАХ =====");
-        // Сначала получаем топ-3 страны по экономике
-        String top3Query = "SELECT name FROM countries ORDER BY economy DESC LIMIT 3";
-
-        List<String> top3Countries = new ArrayList<>();
-        executeAndPrintQuery(dbManager, top3Query, rs -> {
-            try {
-                while (rs.next()) {
-                    top3Countries.add(rs.getString("name"));
-                }
-            } catch (SQLException e) {
-                e.printStackTrace();
-            }
-        });
-
-        // Создаем список стран с кавычками для SQL запроса
-        List<String> top3Quoted = top3Countries.stream()
-                .map(c -> "'" + c + "'")
-                .collect(Collectors.toList());
-
-        // Теперь ищем среди этих стран те, что находятся в указанных регионах
+        // Запрос 2
+        System.out.println("\n===== ЗАПРОС 2: СТРАНА С САМЫМ ВЫСОКИМ ЭКОНОМИЧЕСКИМ ПОКАЗАТЕЛЕМ =====");
         String query2 = "SELECT c.name, c.economy, r.name AS region_name " +
                 "FROM countries c " +
                 "JOIN regions r ON c.region_id = r.id " +
-                "WHERE r.name IN ('Latin America and Caribbean', 'Eastern Asia', 'Southeastern Asia') " +
-                "AND c.name IN (" + String.join(",", top3Quoted) + ") " +
+                "WHERE r.name IN ('Latin America and Caribbean', 'Eastern Asia') " +
                 "ORDER BY c.economy DESC LIMIT 1";
-
-        // Используем массив из одного элемента вместо локальной переменной
-        final boolean[] foundCountry = {false};
 
         executeAndPrintQuery(dbManager, query2, rs -> {
             try {
                 if (rs.next()) {
-                    foundCountry[0] = true;
                     System.out.println("Результат:");
                     System.out.println("-".repeat(50));
                     System.out.printf("Страна: %s%n", rs.getString("name"));
@@ -127,28 +103,7 @@ public class Main {
                     System.out.printf("Экономический показатель (GDP per Capita): %s%n",
                             DECIMAL_FORMAT.format(rs.getDouble("economy")));
                 } else {
-                    // Если не найдено стран в точных регионах, расширяем поиск
-                    String extendedQuery = "SELECT c.name, c.economy, r.name AS region_name " +
-                            "FROM countries c " +
-                            "JOIN regions r ON c.region_id = r.id " +
-                            "WHERE c.name IN (" + String.join(",", top3Quoted) + ") " +
-                            "ORDER BY c.economy DESC LIMIT 1";
-
-                    executeAndPrintQuery(dbManager, extendedQuery, rs2 -> {
-                        try {
-                            if (rs2.next()) {
-                                System.out.println("В указанных регионах нет стран из топ-3 по экономике.");
-                                System.out.println("Ближайшая страна из топ-3 по экономике:");
-                                System.out.println("-".repeat(50));
-                                System.out.printf("Страна: %s%n", rs2.getString("name"));
-                                System.out.printf("Регион: %s%n", rs2.getString("region_name"));
-                                System.out.printf("Экономический показатель (GDP per Capita): %s%n",
-                                        DECIMAL_FORMAT.format(rs2.getDouble("economy")));
-                            }
-                        } catch (SQLException e) {
-                            e.printStackTrace();
-                        }
-                    });
+                    System.out.println("В указанных регионах не найдено стран");
                 }
             } catch (SQLException e) {
                 e.printStackTrace();
