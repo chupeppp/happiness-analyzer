@@ -33,7 +33,6 @@ public class Country {
         this.dystopiaResidual = dystopiaResidual;
     }
 
-    // Геттеры и сеттеры
     public int getId() {
         return id;
     }

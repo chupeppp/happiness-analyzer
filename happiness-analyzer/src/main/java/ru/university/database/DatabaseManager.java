@@ -11,9 +11,8 @@ public class DatabaseManager {
 
     public DatabaseManager(String dbName) {
         try {
-            // Загружаем драйвер SQLite
             Class.forName("org.sqlite.JDBC");
-            // Устанавливаем соединение
+            // устанавливаем соединение
             connection = DriverManager.getConnection("jdbc:sqlite:" + dbName);
             System.out.println("Подключение к SQLite успешно установлено");
         } catch (ClassNotFoundException e) {
@@ -26,13 +25,13 @@ public class DatabaseManager {
     }
 
     public void createTables() {
-        // SQL-запрос для создания таблицы регионов
+        // скл-запрос для создания таблицы регионов
         String createRegionsTable = "CREATE TABLE IF NOT EXISTS regions (\n"
                 + " id INTEGER PRIMARY KEY,\n"
                 + " name TEXT NOT NULL UNIQUE\n"
                 + ");";
 
-        // SQL-запрос для создания таблицы стран
+        // скл-запрос для создания таблицы стран
         String createCountriesTable = "CREATE TABLE IF NOT EXISTS countries (\n"
                 + " id INTEGER PRIMARY KEY,\n"
                 + " name TEXT NOT NULL,\n"

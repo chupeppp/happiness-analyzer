@@ -39,25 +39,25 @@ public class Main {
         List<Country> countries = new ArrayList<>();
         Map<String, Region> regionsMap = new HashMap<>();
 
-        // Создаем папку для диаграмм перед началом работы
+        // создаем папка для диаграмм перед началом работы
         createChartsDirectory();
 
-        // Шаг 1: Подготовка CSV файла
+        // подготовка CSV файла
         prepareCSVFile();
 
-        // Шаг 2: Парсинг CSV файла
+        // Парсинг CSV файла
         parseCSVFile(countries, regionsMap);
 
-        // Шаг 3: Работа с базой данных
+        // работа с базой данных
         DatabaseManager dbManager = new DatabaseManager(DB_NAME);
         dbManager.createTables();
 
-        // Преобразуем Map регионов в List для вставки в БД
+        // преобразуем Map регионов в List для вставки в БД
         List<Region> regionsList = new ArrayList<>(regionsMap.values());
         dbManager.insertRegions(regionsList);
         dbManager.insertCountries(countries);
 
-        // Шаг 4: Выполнение SQL-запросов и вывод результатов
+        // выполнение SQL-запросов и вывод результатов
 
         // Запрос 1
         System.out.println("\n===== ЗАПРОС 1: ТОП-10 СТРАН ПО ПОКАЗАТЕЛЮ ЭКОНОМИКИ =====");
@@ -85,7 +85,7 @@ public class Main {
         // Создание диаграммы для первого запроса
         ChartGenerator.createEconomyChart(economyData, "economy_chart.png");
 
-        // Запрос 2
+        // запрос 2
         System.out.println("\n===== ЗАПРОС 2: СТРАНА С САМЫМ ВЫСОКИМ ЭКОНОМИЧЕСКИМ ПОКАЗАТЕЛЕМ =====");
         String query2 = "SELECT c.name, c.economy, r.name AS region_name " +
                 "FROM countries c " +
@@ -110,7 +110,7 @@ public class Main {
             }
         });
 
-        // Запрос 3: Страна из регионов 'Western Europe' и 'North America' со средними показателями по всем критериям
+        // Запрос 3: Страна из регионов 'western Europe' и 'north America' со средними показателями по всем критериям
         System.out.println("\n===== ЗАПРОС 3: СТРАНА СО СРЕДНИМИ ПОКАЗАТЕЛЯМИ =====");
         // Сначала получаем средние значения по каждому критерию
         String avgQuery = "SELECT AVG(economy) as avg_economy, AVG(family) as avg_family, " +
@@ -121,7 +121,6 @@ public class Main {
                 "JOIN regions r ON c.region_id = r.id " +
                 "WHERE r.name IN ('Western Europe', 'North America')";
 
-        // Используем массивы из одного элемента, чтобы обойти ограничение лямбд
         final double[] averages = new double[7];
         executeAndPrintQuery(dbManager, avgQuery, rs -> {
             try {
@@ -149,12 +148,11 @@ public class Main {
             }
         });
 
-        // Теперь находим страну, наиболее близкую к средним показателям
+        //  страна наиболее близкую к средним показателям:
         String query3 = "SELECT name, economy, family, health, freedom, trust, generosity, happiness_score " +
                 "FROM countries " +
                 "WHERE region_id IN (SELECT id FROM regions WHERE name IN ('Western Europe', 'North America'))";
 
-        // Используем массивы из одного элемента для изменения значений внутри лямбды
         final Country[] closestCountry = new Country[1];
         final double[] minDeviation = {Double.MAX_VALUE};
 
@@ -209,7 +207,7 @@ public class Main {
                     DECIMAL_FORMAT.format(closestCountry[0].getHappinessScore()), DECIMAL_FORMAT.format(averages[6]));
         }
 
-        // Дополнительная визуализация: Топ-10 стран по общему индексу счастья
+        // дополнительная визуализация: топ-10 стран по общему индексу счастья
         System.out.println("\n===== ДОПОЛНИТЕЛЬНАЯ ВИЗУАЛИЗАЦИЯ: ТОП-10 СТРАН ПО ИНДЕКСУ СЧАСТЬЯ =====");
         String topHappinessQuery = "SELECT name, happiness_score FROM countries ORDER BY happiness_rank LIMIT 10";
         List<String> topCountries = new ArrayList<>();
@@ -232,10 +230,10 @@ public class Main {
             }
         });
 
-        // Создание диаграммы для топ-10 стран по счастью
+        // создание диаграммы для топ-10 стран по счастью
         ChartGenerator.createTopCountriesChart(topCountries, happinessScores, "happiness_chart.png");
 
-        // Шаг 5: Закрытие соединения с базой данных
+        // закрытие соединения с базой данных
         dbManager.closeConnection();
 
         System.out.println("\nПроект успешно выполнен!");
@@ -257,11 +255,9 @@ public class Main {
 
     private static void prepareCSVFile() {
         try {
-            // Копируем CSV файл из ресурсов в корневую директорию для чтения
             InputStream inputStream = Main.class.getClassLoader().getResourceAsStream(CSV_FILE_NAME);
             if (inputStream == null) {
                 System.out.println("CSV файл не найден в ресурсах!");
-                // Пытаемся найти файл в текущей директории
                 File currentFile = new File(CSV_FILE_NAME);
                 if (currentFile.exists()) {
                     System.out.println("CSV файл найден в текущей директории");
@@ -282,7 +278,7 @@ public class Main {
 
     private static void parseCSVFile(List<Country> countries, Map<String, Region> regionsMap) {
         try (CSVReader reader = new CSVReader(new FileReader(CSV_FILE_NAME))) {
-            // Пропускаем заголовок
+            // пропускаем заголовок
             String[] header = reader.readNext();
             System.out.println("Заголовки CSV файла:");
             System.out.println(Arrays.toString(header));
@@ -302,7 +298,7 @@ public class Main {
                         continue;
                     }
 
-                    // Извлекаем данные из CSV
+                    // Извлекаем данные из CSv
                     String countryName = nextLine[0];
                     String regionName = nextLine[1];
                     int happinessRank = Integer.parseInt(nextLine[2]);
@@ -316,14 +312,14 @@ public class Main {
                     double generosity = Double.parseDouble(nextLine[10]);
                     double dystopiaResidual = Double.parseDouble(nextLine[11]);
 
-                    // Проверяем, существует ли регион в мапе
+                    // проверяем существует ли регион
                     Region region = regionsMap.get(regionName);
                     if (region == null) {
                         region = new Region(regionCounter++, regionName);
                         regionsMap.put(regionName, region);
                     }
 
-                    // Создаем объект Country
+                    // создаем объект Country
                     Country country = new Country(
                             countryCounter++,
                             countryName,

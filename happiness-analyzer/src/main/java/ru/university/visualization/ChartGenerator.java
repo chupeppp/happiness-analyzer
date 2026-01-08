@@ -35,12 +35,12 @@ public class ChartGenerator {
     public static void createEconomyChart(Map<String, Double> economyData, String filename) {
         DefaultCategoryDataset dataset = new DefaultCategoryDataset();
 
-        // Добавляем все данные в датасет
+        // добавл все данные в датасет
         for (Map.Entry<String, Double> entry : economyData.entrySet()) {
             dataset.addValue(entry.getValue(), "Economy", entry.getKey());
         }
 
-        // Создаем диаграмму
+        // создаем диаграмму
         JFreeChart barChart = ChartFactory.createBarChart(
                 "Средний GDP per Capita по регионам", // Название диаграммы
                 "Country", // Название оси X
@@ -49,7 +49,7 @@ public class ChartGenerator {
                 PlotOrientation.VERTICAL,
                 true, true, false);
 
-        // Настраиваем внешний вид диаграммы
+        //  внешний вид диаграммы
         barChart.getTitle().setFont(new Font("SansSerif", Font.BOLD, 16));
         barChart.getTitle().setPaint(Color.DARK_GRAY);
 
@@ -60,7 +60,6 @@ public class ChartGenerator {
         BarRenderer renderer = (BarRenderer) plot.getRenderer();
         renderer.setSeriesPaint(0, new Color(41, 98, 255)); // Цвет столбцов
 
-        // Исправленные методы для JFreeChart 1.5.4
         renderer.setDefaultItemLabelGenerator(new StandardCategoryItemLabelGenerator("{2}", DECIMAL_FORMAT));
         renderer.setDefaultItemLabelsVisible(true);
         renderer.setDefaultItemLabelPaint(Color.DARK_GRAY);
@@ -76,13 +75,13 @@ public class ChartGenerator {
         rangeAxis.setTickLabelFont(new Font("SansSerif", Font.PLAIN, 10));
         rangeAxis.setTickLabelPaint(Color.DARK_GRAY);
 
-        // Создаем папку для диаграмм, если ее нет
+        // создаем папку для диаграмм если ее нет
         File dir = new File("charts");
         if (!dir.exists()) {
             dir.mkdirs();
         }
 
-        // Сохраняем диаграмму в файл
+        // сохраняем диаграмму в файл
         try {
             ChartUtils.saveChartAsPNG(new File("charts/" + filename), barChart, 1000, 600);
             System.out.println("Диаграмма экономики успешно сохранена в файл: charts/" + filename);
@@ -115,9 +114,8 @@ public class ChartGenerator {
         plot.setRangeGridlinePaint(Color.LIGHT_GRAY);
 
         BarRenderer renderer = (BarRenderer) plot.getRenderer();
-        renderer.setSeriesPaint(0, new Color(41, 182, 246)); // Цвет столбцов
+        renderer.setSeriesPaint(0, new Color(41, 182, 246));
 
-        // Исправленные методы для JFreeChart 1.5.4
         renderer.setDefaultItemLabelGenerator(new StandardCategoryItemLabelGenerator("{2}", DECIMAL_FORMAT));
         renderer.setDefaultItemLabelsVisible(true);
         renderer.setDefaultItemLabelPaint(Color.DARK_GRAY);
@@ -132,13 +130,13 @@ public class ChartGenerator {
         rangeAxis.setTickLabelFont(new Font("SansSerif", Font.PLAIN, 10));
         rangeAxis.setTickLabelPaint(Color.DARK_GRAY);
 
-        // Создаем папку для диаграмм, если ее нет
+        // создаем папку для диаграмм если ее нет
         File dir = new File("charts");
         if (!dir.exists()) {
             dir.mkdirs();
         }
 
-        // Сохраняем диаграмму в файл
+        // сохраняем диаграмму в файл
         try {
             ChartUtils.saveChartAsPNG(new File("charts/" + filename), barChart, 1000, 600);
             System.out.println("Диаграмма индекса счастья успешно сохранена в файл: charts/" + filename);
